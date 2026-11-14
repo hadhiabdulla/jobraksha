@@ -4,7 +4,7 @@
 
 JobRaksha is a free, no-sign-up web app that checks any job offer - a WhatsApp forward, SMS, email or job posting - for known scam patterns and explains the verdict in plain language in **English, Hindi and Malayalam**.
 
-Live: **https://jobraksha.pages.dev**
+Live: _(deployment URL goes here)_
 
 ## Why
 
@@ -25,7 +25,7 @@ Verified figures:
 
 ## AgentFoundry (AF)
 
-This project is built in the **AgentFoundry IDE**, the official IDE of the Code for a Billion hackathon. The repo was created and edited in AgentFoundry, and commits were made from its built-in terminal. _(Specific work steps are listed in SUBMISSION.md.)_
+This project is built in the **AgentFoundry IDE**, the official IDE of the Code for a Billion hackathon. The repo was created and edited in AgentFoundry, and the GitHub repo is synced from the same working tree. _(Specific work steps are listed in SUBMISSION.md.)_
 
 ## Run it locally
 
@@ -47,9 +47,7 @@ The suite covers scam variants that must be caught (advance fee, mule recruitmen
 
 ## Deployment
 
-Deployed as a static site on Cloudflare Pages: https://jobraksha.pages.dev
-
-Two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) plus a KV binding `JR_COUNT` provide the public usage counter and feedback tallies. They count **check events and feedback taps, not unique people**, store **no message text**, and rate-limit by SHA-256-hashed caller IP (50 checks/day, 20 feedback taps/day, keys expire after 48h; raw IPs are never stored). Cloudflare dashboard drag-and-drop deploys do not activate Pages Functions, so on the current deploy the counter and feedback tally stay hidden; the functions activate when deployed via Wrangler CLI or git integration.
+Static site plus two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) backed by a KV namespace `JR_COUNT` for the public usage counter and feedback tallies. No message content is ever sent or stored.
 
 ## Impact ledger
 
