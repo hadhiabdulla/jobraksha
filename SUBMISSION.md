@@ -9,9 +9,9 @@ The initial JobRaksha build - `engine.js` (verdict engine), `index.html` (UI), `
 After signing up, the project was moved into the AgentFoundry workspace and AF was used for real work on it:
 
 1. **Project workspace** - the whole `jobraksha` tree is managed from the AF file explorer; engine, UI, i18n, PWA and function files were opened and reviewed in the AF editor.
-2. **Test suite in the integrated terminal** - `node --test tests/engine.test.mjs` run in AF's built-in terminal: **17 tests, 17 passing, 0 failing** (scam variants that must be caught, genuine offers that must not be flagged, determinism, junk input, Malayalam text, long inputs).
+2. **Test suite in the integrated terminal** - `node --test tests/engine.test.mjs` run in AF's built-in terminal: **28 tests, 28 passing, 0 failing** (scam variants that must be caught, genuine offers that must not be flagged, determinism, junk input, Malayalam text, long inputs).
 3. **Documentation** - `README.md` (accuracy correction to this section) and this `SUBMISSION.md` were edited and authored in the AF editor.
-4. **Verification** - the live deployment at <https://jobraksha.pages.dev> was checked (counter API over HTTP and the live UI) from the AF environment.
+4. **Ongoing development** - new test coverage and further changes are being added from the AgentFoundry workspace (editor and integrated terminal) as development continues.
 
 ## What this means for eligibility
 
