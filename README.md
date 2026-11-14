@@ -49,7 +49,7 @@ The suite covers scam variants that must be caught (advance fee, mule recruitmen
 
 Deployed as a static site on Cloudflare Pages: https://jobraksha.pages.dev
 
-Two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) plus a KV binding `JR_COUNT` provide the public usage counter and feedback tallies. Cloudflare dashboard drag-and-drop deploys do not activate Pages Functions, so on the current deploy the counter and feedback tally stay hidden; the functions activate when deployed via Wrangler CLI or git integration. No message content is ever sent or stored on any path.
+Two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) plus a KV binding `JR_COUNT` provide the public usage counter and feedback tallies. They count **check events and feedback taps, not unique people**, store **no message text**, and rate-limit by SHA-256-hashed caller IP (50 checks/day, 20 feedback taps/day, keys expire after 48h; raw IPs are never stored). Cloudflare dashboard drag-and-drop deploys do not activate Pages Functions, so on the current deploy the counter and feedback tally stay hidden; the functions activate when deployed via Wrangler CLI or git integration.
 
 ## Impact ledger
 
