@@ -4,7 +4,7 @@
 
 JobRaksha is a free, no-sign-up web app that checks any job offer - a WhatsApp forward, SMS, email or job posting - for known scam patterns and explains the verdict in plain language in **English, Hindi and Malayalam**.
 
-Live: _(deployment URL goes here)_
+Live: **https://jobraksha.pages.dev**
 
 ## Why
 
@@ -40,14 +40,16 @@ python3 -m http.server 8080
 ## Tests
 
 ```bash
-node --test tests/
+node --test tests/engine.test.mjs
 ```
 
 The suite covers scam variants that must be caught (advance fee, mule recruitment, task scams, brand impersonation, data harvesting, urgency + fee, gift cards, unrealistic salary, suspicious links), genuine offers that must not be flagged (TCS careers post, startup role with real domain, DRDO internship notice, personal referral), determinism, junk input, Malayalam text and long inputs.
 
 ## Deployment
 
-Static site plus two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) backed by a KV namespace `JR_COUNT` for the public usage counter and feedback tallies. No message content is ever sent or stored.
+Deployed as a static site on Cloudflare Pages: https://jobraksha.pages.dev
+
+Two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) plus a KV binding `JR_COUNT` provide the public usage counter and feedback tallies. Cloudflare dashboard drag-and-drop deploys do not activate Pages Functions, so on the current deploy the counter and feedback tally stay hidden; the functions activate when deployed via Wrangler CLI or git integration. No message content is ever sent or stored on any path.
 
 ## Impact ledger
 
