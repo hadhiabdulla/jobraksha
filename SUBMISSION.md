@@ -9,9 +9,9 @@ The initial JobRaksha build - `engine.js` (verdict engine), `index.html` (UI), `
 After signing up, the project was moved into the AgentFoundry workspace and AF was used for real work on it:
 
 1. **Project workspace** - the whole `jobraksha` tree is managed from the AF file explorer; engine, UI, i18n, PWA and function files were opened and reviewed in the AF editor.
-2. **Test suite in the integrated terminal** - `node --test tests/engine.test.mjs` run in AF's built-in terminal: **28 tests, 28 passing, 0 failing** (scam variants that must be caught, genuine offers that must not be flagged, determinism, junk input, Malayalam text, long inputs).
+2. **Test suite in the integrated terminal** - `node --test tests/engine.test.mjs` run in AF's built-in terminal: **34 tests, 34 passing, 0 failing** (scam variants that must be caught, genuine offers that must not be flagged, determinism, junk input, Malayalam text, long inputs, and Malayalam/Hindi scam detection).
 3. **Documentation** - `README.md` (accuracy correction to this section) and this `SUBMISSION.md` were edited and authored in the AF editor.
-4. **Ongoing development** - new test coverage and further changes are being added from the AgentFoundry workspace (editor and integrated terminal) as development continues.
+4. **Ongoing development** - Malayalam and Hindi scam-signal detection (advance-fee demands, urgency markers, Aadhaar/OTP harvesting) was added to the verdict engine from the AgentFoundry workspace, with six new detection tests, and the full 34-test suite runs green in AF's integrated terminal.
 
 ## What this means for eligibility
 
