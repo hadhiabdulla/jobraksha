@@ -131,7 +131,7 @@ $('go').onclick=async()=>{
   else $('sigblock').classList.add('hidden');
   if(!counted){ counted=true; try{ const c=await fetch('/api/count',{method:'POST'}); const j=await c.json(); if(j.count)$('count').textContent=j.count; }catch(e){} }
   $('out').scrollIntoView({behavior:'smooth',block:'start'});
-});
+};
 async function fb(v){ try{ await fetch('/api/feedback?v='+v,{method:'POST'}); }catch(e){}
   $('t-helpful').textContent=T('thanks'); $('fby').remove(); $('fbn').remove(); }
 $('fby').onclick=()=>fb('yes'); $('fbn').onclick=()=>fb('no');
