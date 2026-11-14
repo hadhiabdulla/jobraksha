@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobRaksha - Is that job offer real?</title>
+<meta name="description" content="Free scam check for job offers. Paste any WhatsApp forward, SMS, email or posting and get an instant verdict in English, Hindi or Malayalam.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f5132">
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--ink:#1a1d1a;--mut:#5b615b;--acc:#0f5132;--warn:#b02a37;--mid:#b06a00;--ok:#0f5132;--line:#e3e6e0}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;padding:0 0 4rem}
+.wrap{max-width:44rem;margin:0 auto;padding:1rem}
+header{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;gap:.5rem;flex-wrap:wrap}
+h1{font-size:1.5rem;color:var(--acc)}
+.tag{color:var(--mut);font-size:.95rem;margin-top:.1rem}
+.langs{display:flex;gap:.3rem}
+.langs button{border:1px solid var(--line);background:var(--card);border-radius:1rem;padding:.3rem .7rem;font-size:.85rem;cursor:pointer}
+.langs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:1.1rem;margin-top:1rem}
+textarea{width:100%;min-height:9rem;border:1px solid var(--line);border-radius:.6rem;padding:.8rem;font:inherit;font-size:1rem;resize:vertical}
+.row{display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap}
+button.primary{background:var(--acc);color:#fff;border:0;border-radius:.6rem;padding:.75rem 1.4rem;font-size:1rem;cursor:pointer}
+button.ghost{background:none;border:1px solid var(--line);border-radius:.6rem;padding:.75rem 1rem;font-size:.9rem;cursor:pointer;color:var(--mut)}
+.verdict{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:.6rem}
+.pill{border-radius:1rem;padding:.15rem .8rem;font-size:.85rem;font-weight:600;color:#fff}
+.b-likely_scam{background:var(--warn)}.b-suspicious{background:var(--mid)}.b-caution{background:#8a8a00}.b-no_signals{background:var(--ok)}
+.score{font-size:.9rem;color:var(--mut);margin-top:.3rem}
+ul.sig{margin:.7rem 0 0 1.2rem}
+ul.sig li{margin:.3rem 0}
+.steps li{margin:.35rem 0}
+.disc{font-size:.85rem;color:var(--mut);border-left:3px solid var(--line);padding-left:.7rem;margin-top:.9rem}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--mut);margin-top:.9rem;flex-wrap:wrap;gap:.5rem}
+footer{text-align:center;color:var(--mut);font-size:.8rem;margin-top:2rem;padding:0 1rem}
+.fb button{margin-right:.4rem}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1 id="t-title"></h1><div class="tag" id="t-tagline"></div></div>
+  <div class="langs">
+    <button data-lang="en" class="on">EN</button>
+    <button data-lang="hi">हिं</button>
+    <button data-lang="ml">മല</button>
+  </div>
+</header>
+
+<div class="card">
+  <p id="t-intro" style="margin-bottom:.8rem"></p>
+  <textarea id="inp"></textarea>
+  <div class="row">
+    <button class="primary" id="go"></button>
+    <button class="ghost" id="ex"></button>
+  </div>
+</div>
+
+<div class="card hidden" id="out">
+  <div class="verdict"><span class="pill" id="pill"></span><span id="vtext"></span></div>
+  <div class="score" id="scoreline"></div>
+  <div id="sigblock" class="hidden">
+    <h3 id="t-signals" style="margin-top:.9rem;font-size:1rem"></h3>
+    <ul class="sig" id="siglist"></ul>
+  </div>
+  <div class="disc" id="t-disc" style="margin-top:1rem"></div>
+  <div class="card" style="background:var(--bg);margin-top:1rem">
+    <h3 id="t-steps" style="font-size:1rem"></h3>
+    <ol class="steps" style="margin:.5rem 0 0 1.2rem">
+      <li id="t-step1"></li><li id="t-step2"></li><li id="t-step3"></li>
+    </ol>
+  </div>
+  <div class="meta">
+    <span><span id="count">-</span> <span id="t-count"></span></span>
+    <span class="fb"><span id="t-helpful"></span>
+      <button class="ghost" id="fby"></button><button class="ghost" id="fbn"></button>
+    </span>
+  </div>
+</div>
+
+<footer id="t-footer"></footer>
+</div>
+
+<script src="i18n.js"></script>
+<script type="module">
+import { analyze } from './engine.js';
+let lang = localStorage.getItem('jr-lang') || 'en';
+const $ = id => document.getElementById(id);
+const EXAMPLES = {
+  en: 'Congratulations! You are selected for Data Entry Work From Home at Amazon. No interview, direct joining. Salary Rs 45,000/month. Pay refundable registration fee of Rs 999 via UPI to confirm your slot today. Only 5 slots left! Contact HR on WhatsApp +919999999999 or hr.amazonjobs@gmail.com',
+  hi: 'बधाई हो! आपका चयन Amazon में Data Entry Work From Home के लिए हुआ है। No interview, direct joining. सैलरी Rs 45,000/माह। आज ही UPI से Rs 999 की refundable registration fee देकर अपनी सीट पक्की करें। सिर्फ़ 5 सीटें बची हैं! HR से WhatsApp +919999999999 पर संपर्क करें',
+  ml: 'Congratulations! Amazon-ൽ Data Entry Work From Home ജോലിക്ക് തിരഞ്ഞെടുത്തു. No interview, direct joining. ശമ്പളം Rs 45,000/മാസം. നിങ്ങളുടെ സീറ്റ് ഉറപ്പാക്കാൻ ഇന്ന് തന്നെ UPI വഴി Rs 999 refundable registration fee അടയ്ക്കൂ. 5 സീറ്റ് മാത്രം ബാക്കി! HR-മായി WhatsApp +919999999999-ൽ ബന്ധപ്പെടൂ'
+};
+function T(k){ return (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k; }
+function paint(){
+  document.documentElement.lang = lang;
+  $('t-title').textContent = T('title');
+  $('t-tagline').textContent = T('tagline');
+  $('t-intro').textContent = T('intro');
+  $('inp').placeholder = T('placeholder');
+  $('go').textContent = T('analyze');
+  $('ex').textContent = T('try_example');
+  $('t-signals').textContent = T('signals_found');
+  $('t-steps').textContent = T('next_steps');
+  $('t-step1').textContent = T('step1');
+  $('t-step2').textContent = T('step2');
+  $('t-step3').textContent = T('step3');
+  $('t-helpful').textContent = T('helpful_q');
+  $('fby').textContent = T('yes'); $('fbn').textContent = T('no');
+  $('t-count').textContent = T('checks_done');
+  $('t-footer').textContent = T('footer');
+}
+document.querySelectorAll('.langs button').forEach(b=>b.onclick=()=>{
+  lang=b.dataset.lang; localStorage.setItem('jr-lang',lang);
+  document.querySelectorAll('.langs button').forEach(x=>x.classList.toggle('on',x===b));
+  paint();
+});
+$('ex').onclick=()=>{ $('inp').value = EXAMPLES[lang] || EXAMPLES.en; };
+let counted=false;
+$('go').onclick=async()=>{
+  const r = analyze($('inp').value);
+  $('out').classList.remove('hidden');
+  $('pill').className='pill b-'+r.band;
+  $('vtext').textContent = T('verdict_'+r.band);
+  $('scoreline').textContent = T('score_label')+': '+r.score+'/100';
+  $('t-disc').textContent = T('disclaimer');
+  const ul=$('siglist'); ul.innerHTML='';
+  if(r.signals.length){ $('sigblock').classList.remove('hidden');
+    for(const s of r.signals){ const li=document.createElement('li'); li.textContent=T('sig_'+s); ul.appendChild(li);} }
+  else $('sigblock').classList.add('hidden');
+  if(!counted){ counted=true; try{ const c=await fetch('/api/count',{method:'POST'}); const j=await c.json(); if(j.count)$('count').textContent=j.count; }catch(e){} }
+  $('out').scrollIntoView({behavior:'smooth',block:'start'});
+});
+async function fb(v){ try{ await fetch('/api/feedback?v='+v,{method:'POST'}); }catch(e){}
+  $('t-helpful').textContent=T('thanks'); $('fby').remove(); $('fbn').remove(); }
+$('fby').onclick=()=>fb('yes'); $('fbn').onclick=()=>fb('no');
+(async()=>{ try{ const c=await fetch('/api/count'); const j=await c.json(); if(j.count)$('count').textContent=j.count; }catch(e){} })();
+paint();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
