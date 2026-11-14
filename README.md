@@ -4,7 +4,7 @@
 
 JobRaksha is a free, no-sign-up web app that checks any job offer - a WhatsApp forward, SMS, email or job posting - for known scam patterns and explains the verdict in plain language in **English, Hindi and Malayalam**.
 
-Live: _(deployment URL goes here)_
+Live: **https://jobraksha.pages.dev**
 
 ## Why
 
@@ -18,7 +18,7 @@ Verified figures:
 
 ## How it works
 
-- **The verdict is deterministic.** Every check runs a transparent rules engine (`engine.js`) - 12 weighted, explainable scam signals (advance fees, UPI/gift-card payment demands, WhatsApp-only recruiters, free-email "HR", unrealistically high salary, no-interview promises, urgency pressure, Aadhaar/OTP harvesting, money-mule recruitment, task scams, suspicious links, brand impersonation). The same input always gives the same verdict, and every signal is shown with its plain-language explanation.
+- **The verdict is deterministic.** Every check runs a transparent rules engine (`engine.js`) - 13 weighted, explainable scam signals (advance fees, UPI/gift-card payment demands, WhatsApp-only recruiters, free-email "HR", unrealistically high salary, no-interview promises, urgency pressure, Aadhaar/OTP harvesting, money-mule recruitment, task scams, suspicious links, vague no-requirement roles, brand impersonation). The same input always gives the same verdict, and every signal is shown with its plain-language explanation.
 - **Privacy by design.** Analysis runs entirely in the browser. The message text never leaves the phone. The only server calls are a public usage counter and a yes/no feedback tap; neither stores message content.
 - **Honest about limits.** "No signals found" is never presented as proof an offer is genuine - the app always says so and tells the user how to verify on the company's official site.
 - **Built for the people scammers target.** No install (PWA), no sign-up, works on low-end phones, Malayalam + Hindi + English, and one-tap reporting guidance to cybercrime.gov.in / helpline 1930.
@@ -49,7 +49,7 @@ The suite covers scam variants that must be caught (advance fee, mule recruitmen
 
 ## Deployment
 
-Static site plus two Cloudflare Pages Functions (`functions/api/count.js`, `functions/api/feedback.js`) backed by a KV namespace `JR_COUNT` for the public usage counter and feedback tallies. No message content is ever sent or stored.
+Static site plus a bundled Cloudflare Pages worker (`_worker.js`, built from the `functions/api/count.js` and `functions/api/feedback.js` sources) backed by a KV namespace `JR_COUNT` for the public usage counter and feedback tallies. No message content is ever sent or stored.
 
 ## Impact ledger
 
