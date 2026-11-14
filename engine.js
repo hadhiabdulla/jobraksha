@@ -12,7 +12,12 @@ const SIGNALS = [
       /\b(refundable|one[- ]time)\s+(security\s+)?(deposit|fee|payment|amount)\b/i,
       /\bpay\s*(rs|inr|₹)?\s*[\d,]+\s*(for|to)\s*(register|confirm|join|book|activate)/i,
       /\bfee\s+of\s*(rs|inr|₹)/i,
-      /\b(gift\s*card|itunes|steam|google play)\b[^.]*\b(code|redeem|share|scratch)/i]
+      /\b(gift\s*card|itunes|steam|google play)\b[^.]*\b(code|redeem|share|scratch)/i,
+      // Malayalam and Hindi fee demands (fee noun near a pay verb, either order)
+      /(ഫീസ്|ഡിപ്പോസിറ്റ്).{0,40}(അടയ്ക്ക|പേയ്‌മെന്റ്)/,
+      /(അടയ്ക്ക|പേയ്‌മെന്റ്).{0,40}(ഫീസ്|ഡിപ്പോസിറ്റ്)/,
+      /(फीस|शुल्क|डिपॉजिट).{0,40}(भरें|दें|जमा|भुगतान)/,
+      /(भरें|जमा करें|भुगतान).{0,40}(फीस|शुल्क|डिपॉजिट)/]
   },
   {
     id: 'payment_rail', weight: 25,
@@ -52,13 +57,19 @@ const SIGNALS = [
       /\b(today|tonight)\s+(only|is the last)/i,
       /\blast\s+(date|day)\s+(is\s+)?(today|tomorrow)\b/i,
       /\b(immediate|urgent)\s+(joining|requirement)\b.*\bfee\b/i,
-      /\bwithin\s+\d+\s+(hours?|hrs)\b/i]
+      /\bwithin\s+\d+\s+(hours?|hrs)\b/i,
+      // Malayalam and Hindi urgency markers
+      /(ഉടൻ|ഉടനടി|അവസാന അവസരം)/,
+      /(तुरंत|आज ही|सीमित सीटें|अंतिम तिथि)/]
   },
   {
     id: 'data_harvest', weight: 30,
     patterns: [/\b(aadha?ar|pan\s*card|passport|voter\s*id)\b.*\b(send|share|upload|submit|whatsapp)\b/i,
       /\b(bank\s+(account|details)|account\s+number|ifsc|cvv|otp|one[- ]time\s+password)\b.*\b(send|share|enter|submit|verify)\b/i,
-      /\b(send|share|submit|upload)\b.*\b(aadha?ar|pan\s*card|bank\s+details|otp)\b/i]
+      /\b(send|share|submit|upload)\b.*\b(aadha?ar|pan\s*card|bank\s+details|otp)\b/i,
+      // Malayalam and Hindi document/OTP harvesting
+      /(ആധാർ|आधार|ओटीपी|ഓടിപി).{0,40}(അയയ്ക്ക|भेजें|साझा|പങ്ക്)/,
+      /(भेजें|അയയ്ക്ക).{0,40}(ആധാർ|आधार|ओटीपी|ഓടിപി)/]
   },
   {
     id: 'money_mule', weight: 30,
