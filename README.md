@@ -25,7 +25,7 @@ Verified figures:
 
 ## AgentFoundry (AF)
 
-JobRaksha's initial build predates our AgentFoundry signup. The project now lives in the AgentFoundry workspace: files are reviewed in its editor, the test suite runs in its integrated terminal (17/17 passing), and ongoing edits are made there. The exact split of what was done where is disclosed in SUBMISSION.md.
+JobRaksha's initial build predates our AgentFoundry signup. The project now lives in the AgentFoundry workspace: files are reviewed in its editor, the test suite runs in its integrated terminal (28/28 passing), and ongoing edits are made there. The exact split of what was done where is disclosed in SUBMISSION.md.
 
 ## Run it locally
 
@@ -40,8 +40,10 @@ python3 -m http.server 8080
 ## Tests
 
 ```bash
-node --test tests/engine.test.mjs
+node --test
 ```
+
+28 tests, 28 passing.
 
 The suite covers scam variants that must be caught (advance fee, mule recruitment, task scams, brand impersonation, data harvesting, urgency + fee, gift cards, unrealistic salary, suspicious links), genuine offers that must not be flagged (TCS careers post, startup role with real domain, DRDO internship notice, personal referral), determinism, junk input, Malayalam text and long inputs.
 
