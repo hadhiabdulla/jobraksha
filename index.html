@@ -72,7 +72,7 @@ footer{text-align:center;color:var(--mut);font-size:.8rem;margin-top:2rem;paddin
     </ol>
   </div>
   <div class="meta">
-    <span><span id="count">-</span> <span id="t-count"></span></span>
+    <span id="countwrap" class="hidden"><span id="count"></span> <span id="t-count"></span></span>
     <span class="fb"><span id="t-helpful"></span>
       <button class="ghost" id="fby"></button><button class="ghost" id="fbn"></button>
     </span>
@@ -129,13 +129,13 @@ $('go').onclick=async()=>{
   if(r.signals.length){ $('sigblock').classList.remove('hidden');
     for(const s of r.signals){ const li=document.createElement('li'); li.textContent=T('sig_'+s); ul.appendChild(li);} }
   else $('sigblock').classList.add('hidden');
-  if(!counted){ counted=true; try{ const c=await fetch('/api/count',{method:'POST'}); const j=await c.json(); if(j.count)$('count').textContent=j.count; }catch(e){} }
+  if(!counted){ counted=true; try{ const c=await fetch('/api/count',{method:'POST'}); const j=await c.json(); if(j.count){$('count').textContent=j.count;$('countwrap').classList.remove('hidden');} }catch(e){} }
   $('out').scrollIntoView({behavior:'smooth',block:'start'});
 };
 async function fb(v){ try{ await fetch('/api/feedback?v='+v,{method:'POST'}); }catch(e){}
   $('t-helpful').textContent=T('thanks'); $('fby').remove(); $('fbn').remove(); }
 $('fby').onclick=()=>fb('yes'); $('fbn').onclick=()=>fb('no');
-(async()=>{ try{ const c=await fetch('/api/count'); const j=await c.json(); if(j.count)$('count').textContent=j.count; }catch(e){} })();
+(async()=>{ try{ const c=await fetch('/api/count'); const j=await c.json(); if(j.count){$('count').textContent=j.count;$('countwrap').classList.remove('hidden');} }catch(e){} })();
 paint();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
