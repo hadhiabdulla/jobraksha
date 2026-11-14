@@ -25,7 +25,7 @@ Verified figures:
 
 ## AgentFoundry (AF)
 
-This project is built in the **AgentFoundry IDE**, the official IDE of the Code for a Billion hackathon. The repo was created and edited in AgentFoundry, and the GitHub repo is synced from the same working tree. _(Specific work steps are listed in SUBMISSION.md.)_
+JobRaksha's initial build predates our AgentFoundry signup. The project now lives in the AgentFoundry workspace: files are reviewed in its editor, the test suite runs in its integrated terminal (17/17 passing), and ongoing edits are made there. The exact split of what was done where is disclosed in SUBMISSION.md.
 
 ## Run it locally
 
