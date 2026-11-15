@@ -8,7 +8,7 @@ const FREE_MAIL = ['gmail.com','yahoo.com','yahoo.in','outlook.com','hotmail.com
 const SIGNALS = [
   {
     id: 'advance_fee', weight: 35,
-    patterns: [/\b(registration|security|joining|processing|training|verification|documentation|onboarding|enrol+ment|admission|courier|file|activation|slot booking|id card)\s*(fee|fees|charge|charges|deposit|amount|payment)\b/i,
+    patterns: [/\b(registration|security|joining|processing|training|verification|documentation|onboarding|enrol+ment|admission|courier|file|activation|slot booking|slot confirmation|confirmation|id card|visa|work permit|medical test|medical|attestation|emigration|air ticket|ticket)\s*(fee|fees|charge|charges|deposit|amount|payment)\b/i,
       /\b(refundable|one[- ]time)\s+(security\s+)?(deposit|fee|payment|amount)\b/i,
       /\bpay\s*(rs|inr|₹)?\s*[\d,]+\s*(for|to)\s*(register|confirm|join|book|activate)/i,
       /\bfee\s+of\s*(rs|inr|₹)/i,
@@ -21,7 +21,9 @@ const SIGNALS = [
   },
   {
     id: 'payment_rail', weight: 25,
-    patterns: [/\b(upi|paytm|phonepe|gpay|google pay|bhim)\b.*\b(pay|send|transfer|deposit)/i,
+    patterns: [/\bqr\s*code\b/i,
+      /\bscan\b[^.\n]{0,20}\b(pay|payment|fee)\b/i,
+      /\b(upi|paytm|phonepe|gpay|google pay|bhim)\b.*\b(pay|send|transfer|deposit)/i,
       /\b(gift\s*card|itunes|steam card|google play card)\b/i,
       /\b(bitcoin|btc|usdt|crypto|usdc)\b/i,
       /\b(send|transfer|pay)\b.*\b(upi|wallet|crypto)\b/i]
@@ -72,6 +74,17 @@ const SIGNALS = [
       /(भेजें|അയയ്ക്ക).{0,40}(ആധാർ|आधार|ओटीपी|ഓടിപി)/]
   },
   {
+    id: 'biometric_harvest', weight: 30,
+    // MHA/I4C advisory (May 2026): fake online interviews harvesting face/eye scans.
+    patterns: [/\b(face|facial)\s*scan\b/i,
+      /\beye\s*scan\b/i,
+      /\bliveness\s*(check|test|verification)\b/i,
+      /\bbiometric\s*(verification|data|kyc|check|authentication)\b/i,
+      /\b(video|online)\s*kyc\b/i,
+      /\bkeep your face in the frame\b/i,
+      /\bblink your eyes\b/i]
+  },
+  {
     id: 'money_mule', weight: 30,
     patterns: [/\b(receive|accept|collect)\b.*\b(payment|money|funds|amount)\b.*\b(forward|transfer|send)\b/i,
       /\b(commission|percentage|%)\b.*\b(per|for every|each)\s+(transaction|transfer|payment)\b/i,
@@ -84,7 +97,8 @@ const SIGNALS = [
       /\b(earn|make)\s*(rs|inr|₹)?\s*[\d,]+\s*((per|a|every)\s*)?(day|daily)\b[^.]*\b(lik(e|ing)|rat(e|ing)|review(ing)?|tasks?|orders?|videos?|subscrib(e|ing))\b/i,
       /\b(prepaid|recharge|boost)\s+(task|order)s?\b/i,
       /\bcomplete\s+(simple\s+|easy\s+)?(online\s+)?tasks?\s+(and|to)\s+earn\b/i,
-      /\b(optimi[sz]e|grab)\s+orders?\b/i]
+      /\b(optimi[sz]e|grab)\s+orders?\b/i,
+      /\b(earn|make)\b[^.\n]{0,25}\b[\d,]{3,}\s*(-|–|to)\s*[\d,]{3,}\s*((per|a|every)\s+)?(day|daily)\b/i]
   },
   {
     id: 'suspicious_link', weight: 15,
@@ -101,6 +115,11 @@ const SIGNALS = [
     id: 'impersonation', weight: 20,
     // Applied in code: big-brand name combined with free mail / chat-only contact.
     patterns: []
+  },
+  {
+    id: 'lookalike_domain', weight: 20,
+    // Applied in code: a link host carries a big-brand name but is not that brand's official domain.
+    patterns: []
   }
 ];
 
@@ -108,6 +127,17 @@ const SHORTENERS = ['bit.ly','tinyurl.com','t.co','goo.gl','cutt.ly','is.gd','rb
 const RISKY_TLDS = ['.xyz','.top','.icu','.click','.live','.buzz','.rest','.quest','.lol','.cam'];
 const BIG_BRANDS = ['amazon','flipkart','google','microsoft','tcs','infosys','wipro','hcl','reliance','tata','accenture','cognizant','tech mahindra','swiggy','zomato','paytm','phonepe','sbi','hdfc','icici','deloitte','kpmg','ernst','ey','ibm','oracle','meta','apple'];
 
+const OFFICIAL_DOMAINS = {
+  amazon: ['amazon.in', 'amazon.com', 'amazon.jobs'], flipkart: ['flipkart.com'],
+  google: ['google.com', 'careers.google'], microsoft: ['microsoft.com'],
+  tcs: ['tcs.com'], infosys: ['infosys.com'], wipro: ['wipro.com'], hcl: ['hcltech.com'],
+  reliance: ['ril.com'], tata: ['tata.com'], accenture: ['accenture.com'],
+  cognizant: ['cognizant.com'], 'tech mahindra': ['techmahindra.com'],
+  swiggy: ['swiggy.com'], zomato: ['zomato.com'], paytm: ['paytm.com'], phonepe: ['phonepe.com'],
+  sbi: ['sbi.co.in', 'onlinesbi.sbi'], hdfc: ['hdfcbank.com'], icici: ['icicibank.com'],
+  deloitte: ['deloitte.com'], kpmg: ['kpmg.com'], ernst: ['ey.com'], ey: ['ey.com'],
+  ibm: ['ibm.com'], oracle: ['oracle.com'], meta: ['meta.com'], apple: ['apple.com']
+};
 const HIGH_SALARY = /(?:rs|inr|₹)\s*(\d[\d,]{3,})|(\d{2,3})\s*k\b\s*(?:per|a|\/)\s*(?:month|day|week)/i;
 function highSalaryAmount(text) {
   const m = text.match(HIGH_SALARY);
@@ -166,6 +196,17 @@ export function analyze(rawText) {
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) { add('suspicious_link', h); break; }
     const tld = '.' + h.split('.').pop();
     if (RISKY_TLDS.includes(tld) && /\b(apply|job|offer|register|join|work|earn|career)/i.test(text)) { add('suspicious_link', h); break; }
+  }
+
+  // lookalike_domain: host uses a big-brand name but is not that brand's official site
+  for (const h of hosts) {
+    for (const b of BIG_BRANDS) {
+      const flat = b.replace(/\s+/g, '');
+      if (!(h.includes(b) || (flat !== b && h.includes(flat)))) continue;
+      const ok = (OFFICIAL_DOMAINS[b] || []).some(d => h === d || h.endsWith('.' + d));
+      if (!ok) { add('lookalike_domain', h); break; }
+    }
+    if (hits.some(x => x.id === 'lookalike_domain')) break;
   }
 
   // impersonation: big-brand name + (free mail or chat-only or risky link)
