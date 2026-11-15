@@ -114,6 +114,10 @@ h3.sec::after{content:"";flex:1;height:1px;background:var(--line)}
 @media(max-width:560px){.how{grid-template-columns:1fr}}
 footer{text-align:center;color:var(--mut);font-size:.8rem;margin-top:2.2rem;padding:0 1rem;max-width:36rem;margin-left:auto;margin-right:auto}
 .hidden{display:none}
+button.rec{border-color:rgba(251,113,133,.65);color:var(--warn);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+.astat{color:var(--acc2)}
+.abtn{font-size:.85rem;padding:.6rem .95rem}
 </style>
 </head>
 <body>
@@ -143,10 +147,18 @@ footer{text-align:center;color:var(--mut);font-size:.8rem;margin-top:2.2rem;padd
 
 <div class="card glow checker">
   <textarea id="inp"></textarea>
+  <p class="pnote" id="t-callhint" style="margin-top:.6rem"></p>
   <div class="row">
     <button class="primary" id="go"></button>
     <button class="ghost" id="ex"></button>
   </div>
+  <div class="row" id="audiorow">
+    <button class="ghost abtn" id="mic"></button>
+    <button class="ghost abtn" id="upl"></button>
+    <input type="file" id="uplfile" accept="audio/*" class="hidden">
+  </div>
+  <p class="pnote astat" id="astat" hidden></p>
+  <p class="pnote" id="t-audionote"></p>
   <p class="pnote" id="t-pnote"></p>
 </div>
 
@@ -189,6 +201,7 @@ footer{text-align:center;color:var(--mut);font-size:.8rem;margin-top:2.2rem;padd
   </ol>
 
   <div class="meta">
+    <button class="ghost abtn hidden" id="listen"></button>
     <span id="countwrap" class="hidden"><span id="count"></span> <span id="t-count"></span></span>
     <span class="fb"><span id="t-helpful"></span>
       <button class="ghost" id="fby"></button><button class="ghost" id="fbn"></button>
@@ -249,6 +262,11 @@ function paint(){
   $('fby').textContent = T('yes'); $('fbn').textContent = T('no');
   $('t-count').textContent = T('checks_done');
   $('t-scoreof').textContent = T('score_caption') + ' /100';
+  $('t-callhint').textContent = T('call_hint');
+  if (!recording) $('mic').innerHTML = micIcon + T('audio_speak');
+  $('upl').innerHTML = clipIcon + T('audio_upload');
+  $('t-audionote').textContent = audioOK ? T('audio_note') : '';
+  $('listen').innerHTML = spkIcon + (speaking ? T('tts_stop') : T('tts_listen'));
   $('t-pnote').textContent = T('privacy_note');
   $('t-how').textContent = T('how_title');
   for (let i = 1; i <= 3; i++) {
@@ -320,11 +338,129 @@ $('go').onclick = async () => {
     for (const c of seen) { const s = document.createElement('span'); s.className = 'chip'; s.textContent = c; cl.appendChild(s); }
   } else $('contactblock').classList.add('hidden');
 
+  stopSpeaking();
   $('out').classList.remove('hidden');
+  refreshListen();
   requestAnimationFrame(() => $('out').classList.add('show'));
   if (!counted) { counted = true; try { const c = await fetch('/api/count', { method: 'POST' }); const j = await c.json(); if (j.count) { $('count').textContent = j.count; $('countwrap').classList.remove('hidden'); } } catch (e) {} }
   $('out').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
+// ---------- audio: speak / upload -> on-device transcript -> editable text ----------
+const micIcon = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:.35rem"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+const clipIcon = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:.35rem"><path d="M21 12.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.85 1.85 0 0 1-2.6-2.6l7.8-7.8"/></svg>';
+const spkIcon = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:.35rem"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const audioOK = typeof WebAssembly !== 'undefined' && !!(window.AudioContext || window.webkitAudioContext);
+const micOK = audioOK && !!navigator.mediaDevices && typeof MediaRecorder !== 'undefined';
+if (!audioOK) $('audiorow').classList.add('hidden');
+if (!micOK) $('mic').classList.add('hidden');
+let recording = false, discardRequested = false, audioBusy = false;
+let rec = null, recChunks = [], recStream = null, discardBtn = null;
+function astat(msg){
+  const e = $('astat');
+  if (!msg) { e.hidden = true; e.textContent = ''; return; }
+  e.hidden = false; e.textContent = msg;
+}
+function setMicIdle(){
+  recording = false;
+  $('mic').classList.remove('rec');
+  $('mic').innerHTML = micIcon + T('audio_speak');
+  if (discardBtn) { discardBtn.remove(); discardBtn = null; }
+}
+async function runTranscription(blob){
+  if (audioBusy) return;
+  audioBusy = true; $('mic').disabled = true; $('upl').disabled = true;
+  try {
+    const { transcribe } = await import('./audio.js');
+    const text = await transcribe(blob, lang, (phase, pct) => {
+      if (phase === 'model') astat(T('tr_model') + (pct != null ? ' ' + pct + '%' : ''));
+      else if (phase === 'work') astat(T('tr_work'));
+      else astat(T('tr_prep'));
+    });
+    if (text && text.length >= 2) {
+      $('inp').value = text;
+      astat(T('tr_done'));
+      $('inp').focus();
+    } else astat(T('tr_too_short'));
+  } catch (e) {
+    astat(T('tr_fail'));
+  } finally {
+    audioBusy = false; $('mic').disabled = false; $('upl').disabled = false;
+  }
+}
+$('mic').onclick = async () => {
+  if (recording) { if (rec && rec.state === 'recording') rec.stop(); return; }
+  if (!micOK) { astat(T('tr_fail')); return; }
+  try {
+    astat(T('rec_starting'));
+    recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mime = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(m => MediaRecorder.isTypeSupported(m)) || '';
+    rec = new MediaRecorder(recStream, mime ? { mimeType: mime } : undefined);
+    recChunks = []; discardRequested = false;
+    rec.ondataavailable = e => { if (e.data && e.data.size) recChunks.push(e.data); };
+    rec.onstop = () => {
+      recStream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(recChunks, { type: rec.mimeType || 'audio/webm' });
+      setMicIdle();
+      if (discardRequested) { discardRequested = false; astat(''); return; }
+      if (blob.size) runTranscription(blob); else astat(T('tr_too_short'));
+    };
+    rec.start();
+    recording = true;
+    $('mic').classList.add('rec');
+    $('mic').innerHTML = micIcon + T('rec_stop');
+    discardBtn = document.createElement('button');
+    discardBtn.className = 'ghost abtn';
+    discardBtn.textContent = T('rec_discard');
+    discardBtn.onclick = () => { discardRequested = true; if (rec && rec.state === 'recording') rec.stop(); };
+    $('mic').after(discardBtn);
+    astat('');
+  } catch (e) {
+    setMicIdle();
+    astat(T('tr_fail'));
+  }
+};
+$('upl').onclick = () => $('uplfile').click();
+$('uplfile').onchange = () => { const f = $('uplfile').files[0]; $('uplfile').value = ''; if (f) runTranscription(f); };
+
+// ---------- spoken result (on-device voices only) ----------
+let speaking = false;
+function pickVoice(){
+  if (!('speechSynthesis' in window)) return null;
+  const vs = speechSynthesis.getVoices().filter(v => v.localService !== false);
+  if (!vs.length) return null;
+  const pref = { en: 'en', hi: 'hi', ml: 'ml' }[lang] || 'en';
+  return vs.find(v => (v.lang || '').toLowerCase().indexOf(pref) === 0)
+      || vs.find(v => (v.lang || '').toLowerCase().indexOf('en') === 0)
+      || vs[0];
+}
+function refreshListen(){
+  $('listen').classList.toggle('hidden', !pickVoice() || $('out').classList.contains('hidden'));
+}
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = refreshListen;
+function stopSpeaking(){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  if (speaking) { speaking = false; $('listen').innerHTML = spkIcon + T('tts_listen'); }
+}
+$('listen').onclick = () => {
+  if (speaking) { stopSpeaking(); return; }
+  const v = pickVoice(); if (!v) return;
+  const bits = [];
+  bits.push($('vtext').textContent + '. ' + $('vsub').textContent);
+  document.querySelectorAll('#siglist .tx').forEach(el => { if (el.childNodes[0]) bits.push(el.childNodes[0].textContent); });
+  bits.push(T('next_steps') + '. ' + [$('t-step1').textContent, $('t-step2').textContent, $('t-step3').textContent].join(' '));
+  speechSynthesis.cancel();
+  speaking = true;
+  $('listen').innerHTML = spkIcon + T('tts_stop');
+  const done = () => { speaking = false; $('listen').innerHTML = spkIcon + T('tts_listen'); };
+  bits.forEach((t, i) => {
+    const u = new SpeechSynthesisUtterance(t);
+    u.voice = v; u.lang = v.lang;
+    if (i === bits.length - 1) { u.onend = done; u.onerror = done; }
+    speechSynthesis.speak(u);
+  });
+};
+
 async function fb(v){ try { await fetch('/api/feedback?v=' + v, { method: 'POST' }); } catch (e) {}
   $('t-helpful').textContent = T('thanks'); $('fby').remove(); $('fbn').remove(); }
 $('fby').onclick = () => fb('yes'); $('fbn').onclick = () => fb('no');
