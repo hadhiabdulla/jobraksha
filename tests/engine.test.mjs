@@ -55,3 +55,44 @@ test('long input is truncated and stable', () => {
   const r = analyze('registration fee ' + 'word '.repeat(100000));
   assert.ok(r.signals.includes('advance_fee'));
 });
+
+// --- Regression scenarios from Nov 2026 gap analysis (real-world advisory patterns) ---
+test('flags classic work-from-home daily-earn SMS', () => {
+  const r = analyze('Earn Rs 3000-5000 daily working from home. Simple mobile work, 2 hours per day. WhatsApp now to join.');
+  assert.ok(r.score >= 30, 'scored ' + r.score + ' ' + JSON.stringify(r.signals));
+});
+
+test('flags QR code payment demand', () => {
+  const r = analyze('Scan the QR code to pay the Rs 999 slot confirmation charge and book your interview.');
+  assert.ok(r.signals.includes('payment_rail') && r.signals.includes('advance_fee'), JSON.stringify(r.signals));
+  assert.ok(r.score >= 30);
+});
+
+test('flags lookalike company domain', () => {
+  const r = analyze('Wipro is hiring freshers! Apply now at https://wipro-careers.in/apply with your resume.');
+  assert.ok(r.signals.includes('lookalike_domain'), JSON.stringify(r.signals));
+});
+
+test('does NOT flag the official company domain', () => {
+  const r = analyze('TCS is hiring. Apply only at https://www.tcs.com/careers. TCS never charges any fee at any stage.');
+  assert.ok(!r.signals.includes('lookalike_domain'), JSON.stringify(r.signals));
+  assert.ok(r.score < 30, 'scored ' + r.score);
+});
+
+test('flags visa and medical test fee demands', () => {
+  const r = analyze('Selected for Dubai hotel job. Pay visa fee 15000 and medical test fee 5000 to process your documents.');
+  assert.ok(r.signals.includes('advance_fee'), JSON.stringify(r.signals));
+  assert.ok(r.score >= 30);
+});
+
+test('flags biometric harvesting interview (MHA/I4C advisory pattern)', () => {
+  const r = analyze('Your online interview is scheduled. Before it starts, complete the face scan and liveness check for identity verification.');
+  assert.ok(r.signals.includes('biometric_harvest'), JSON.stringify(r.signals));
+  assert.ok(r.score >= 30);
+});
+
+test('does NOT flag a genuine video interview', () => {
+  const r = analyze('We would like to invite you to a video interview on Zoom with our hiring panel next Tuesday at 3 pm. The round takes about 45 minutes.');
+  assert.ok(!r.signals.includes('biometric_harvest'), JSON.stringify(r.signals));
+  assert.equal(r.band, 'no_signals');
+});

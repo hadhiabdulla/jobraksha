@@ -18,14 +18,16 @@ Verified figures:
 
 ## How it works
 
-- **The verdict is deterministic.** Every check runs a transparent rules engine (`engine.js`) - 13 weighted, explainable scam signals (advance fees, UPI/gift-card payment demands, WhatsApp-only recruiters, free-email "HR", unrealistically high salary, no-interview promises, urgency pressure, Aadhaar/OTP harvesting, money-mule recruitment, task scams, suspicious links, vague no-requirement roles, brand impersonation). The same input always gives the same verdict, and every signal is shown with its plain-language explanation.
+- **The verdict is deterministic.** Every check runs a transparent rules engine (`engine.js`) - 15 weighted, explainable scam signals (advance fees incl. visa/medical-test/confirmation charges, QR-code and UPI/gift-card payment demands, WhatsApp-only recruiters, free-email "HR", unrealistically high salary, no-interview promises, urgency pressure, Aadhaar/OTP harvesting, face-scan/liveness biometric harvesting, money-mule recruitment, task scams, suspicious and lookalike-company links, vague no-requirement roles, brand impersonation). The same input always gives the same verdict, and every signal is shown with its plain-language explanation.
 - **Privacy by design.** Analysis runs entirely in the browser. The message text never leaves the phone. The only server calls are a public usage counter and a yes/no feedback tap; neither stores message content.
 - **Honest about limits.** "No signals found" is never presented as proof an offer is genuine - the app always says so and tells the user how to verify on the company's official site.
 - **Built for the people scammers target.** No install (PWA), no sign-up, works on low-end phones, Malayalam + Hindi + English, and one-tap reporting guidance to cybercrime.gov.in / helpline 1930.
+- **Works when the scam arrives as a phone call.** Many fake offers come as calls, not texts. You can type a summary of what the caller said, speak it to the app, or add an audio recording. Speech is transcribed on the device (Whisper via transformers.js, ~41 MB one-time model download, cached by the browser); the audio never leaves the phone, and you review and edit the transcript before the check runs. Transcription accuracy depends on the small on-device model - expect mistakes on Malayalam and mixed-language speech, which is why the edit step is required.
+- **Spoken results.** A "Listen to result" button reads the verdict, the warning signs and the next steps aloud, using only on-device system voices (no text is sent to a speech server). It appears only when the device has a suitable voice; tap to start, tap to stop.
 
 ## AgentFoundry (AF)
 
-JobRaksha's initial build predates our AgentFoundry signup. The project now lives in the AgentFoundry workspace: files are reviewed in its editor, the test suite runs in its integrated terminal (34/34 passing), and ongoing edits are made there. The exact split of what was done where is disclosed in SUBMISSION.md.
+JobRaksha's initial build predates our AgentFoundry signup. The project now lives in the AgentFoundry workspace: files are reviewed in its editor, the test suite runs in its integrated terminal (41/41 passing), and ongoing edits are made there. The exact split of what was done where is disclosed in SUBMISSION.md.
 
 ## Run it locally
 
@@ -43,9 +45,11 @@ python3 -m http.server 8080
 node --test
 ```
 
-34 tests, 34 passing.
+41 tests, 41 passing.
 
-The suite covers scam variants that must be caught (advance fee, mule recruitment, task scams, brand impersonation, data harvesting, urgency + fee, gift cards, unrealistic salary, suspicious links), genuine offers that must not be flagged (TCS careers post, startup role with real domain, DRDO internship notice, personal referral), determinism, junk input, Malayalam text and long inputs.
+The suite covers scam variants that must be caught (advance fee incl. visa/medical-test charges, QR-code payment demands, lookalike company domains, biometric-harvest interviews, mule recruitment, task scams, brand impersonation, data harvesting, urgency + fee, gift cards, unrealistic salary, suspicious links), genuine offers that must not be flagged (TCS careers post incl. its official domain, startup role with real domain, DRDO internship notice, personal referral, a genuine video-interview invite), determinism, junk input, Malayalam text and long inputs.
+
+The scam scenarios are drawn from published advisories and reporting: the MHA/I4C warning on fake online interviews and biometric harvesting (May 2026), the CGI Dubai advisory on fraudulent visa/migration agencies, and state cyber-police fake-job-offer SMS patterns.
 
 ## Deployment
 
