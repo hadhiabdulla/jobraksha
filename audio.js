@@ -2,8 +2,8 @@
 // Uses transformers.js with the onnx-community/whisper-tiny ONNX model, running
 // in the browser on WASM. The model is downloaded once from the Hugging Face CDN
 // and cached by the browser; audio is decoded locally and never uploaded.
-// Model size reference: quantized encoder ~10 MB + decoder ~31 MB (Hugging Face
-// file listings for onnx-community/whisper-tiny).
+// Model size reference: quantized encoder ~9.7 MB + quantized merged decoder
+// ~29.3 MB (Hugging Face file listings for onnx-community/whisper-tiny).
 
 const TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 const MODEL_ID = 'onnx-community/whisper-tiny';
@@ -17,7 +17,7 @@ function getTranscriber(onProgress) {
       env.allowLocalModels = false; // models come from the HF CDN only, cached by the browser
       return pipeline('automatic-speech-recognition', MODEL_ID, {
         device: 'wasm',
-        dtype: { encoder_model: 'fp32', decoder_model_merged: 'q8' },
+        dtype: { encoder_model: 'q8', decoder_model_merged: 'q8' },
         progress_callback: p => {
           if (p && p.status === 'progress' && p.total) {
             onProgress('model', Math.min(100, Math.round((p.loaded / p.total) * 100)));
