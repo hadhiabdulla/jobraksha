@@ -123,6 +123,8 @@ const SIGNALS = [
   }
 ];
 
+export const SIGNAL_IDS = SIGNALS.map(s => s.id);
+
 const SHORTENERS = ['bit.ly','tinyurl.com','t.co','goo.gl','cutt.ly','is.gd','rb.gy','shorturl.at','tiny.cc','s.id'];
 const RISKY_TLDS = ['.xyz','.top','.icu','.click','.live','.buzz','.rest','.quest','.lol','.cam'];
 const BIG_BRANDS = ['amazon','flipkart','google','microsoft','tcs','infosys','wipro','hcl','reliance','tata','accenture','cognizant','tech mahindra','swiggy','zomato','paytm','phonepe','sbi','hdfc','icici','deloitte','kpmg','ernst','ey','ibm','oracle','meta','apple'];
