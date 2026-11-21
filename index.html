@@ -101,6 +101,15 @@ h3.sec::after{content:"";flex:1;height:1px;background:var(--line)}
 .steps .n{flex:none;width:1.7rem;height:1.7rem;border-radius:.55rem;background:var(--grad);color:#06281c;font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center}
 .steps .s{font-size:.94rem;padding-top:.1rem}
 
+/* ---------- verification plan + genuine checklist ---------- */
+.plan{background:var(--card2);border:1px solid var(--line);border-radius:.85rem;padding:.75rem .9rem;animation:rise .5s ease both}
+.plan:nth-child(2){animation-delay:.06s}.plan:nth-child(3){animation-delay:.12s}.plan:nth-child(4){animation-delay:.18s}.plan:nth-child(5){animation-delay:.24s}.plan:nth-child(n+6){animation-delay:.3s}
+.plan h4{font-size:.88rem;margin:0 0 .45rem;color:var(--acc2)}
+.plan ol{margin:0;padding-left:1.15rem;display:grid;gap:.32rem}
+.plan li{font-size:.88rem;color:var(--mid)}
+#genblock{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.22);border-radius:.9rem;padding:.8rem .95rem;margin-top:1.1rem}
+#genblock h3.sec{margin-top:0}
+
 /* ---------- misc ---------- */
 .disc{font-size:.84rem;color:var(--mut);border-left:3px solid rgba(251,191,36,.5);padding-left:.7rem;margin-top:1.1rem}
 .meta{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--mut);margin-top:1.1rem;flex-wrap:wrap;gap:.6rem}
@@ -186,6 +195,11 @@ button.rec{border-color:rgba(251,113,133,.65);color:var(--warn);animation:pulse 
     <div class="siggrid" id="siglist"></div>
   </div>
 
+  <div id="planblock" class="hidden">
+    <h3 class="sec" id="t-plans"></h3>
+    <div class="siggrid" id="planlist"></div>
+  </div>
+
   <div id="contactblock" class="hidden">
     <h3 class="sec" id="t-contacts"></h3>
     <div class="chips" id="contactlist"></div>
@@ -199,6 +213,11 @@ button.rec{border-color:rgba(251,113,133,.65);color:var(--warn);animation:pulse 
     <li><span class="n">2</span><span class="s" id="t-step2"></span></li>
     <li><span class="n">3</span><span class="s" id="t-step3"></span></li>
   </ol>
+
+  <div id="genblock" class="hidden">
+    <h3 class="sec" id="t-genuine"></h3>
+    <ol class="steps" id="genlist"></ol>
+  </div>
 
   <div class="meta">
     <button class="ghost abtn hidden" id="listen"></button>
@@ -237,6 +256,7 @@ const ICONS = {
 };
 const WARN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 17H2L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>';
 function T(k){ return (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k; }
+function TA(k){ const v = (I18N[lang] && I18N[lang][k]) || I18N.en[k]; return Array.isArray(v) ? v : []; }
 function paint(){
   document.documentElement.lang = lang;
   $('t-title').textContent = T('title');
@@ -255,6 +275,8 @@ function paint(){
   $('t-signals').textContent = T('signals_found');
   $('t-contacts').textContent = T('contacts_spotted');
   $('t-steps').textContent = T('next_steps');
+  $('t-plans').textContent = T('verify_title');
+  $('t-genuine').textContent = T('genuine_title');
   $('t-step1').textContent = T('step1');
   $('t-step2').textContent = T('step2');
   $('t-step3').textContent = T('step3');
@@ -330,6 +352,31 @@ $('go').onclick = async () => {
       sl.appendChild(d);
     }
   } else $('sigblock').classList.add('hidden');
+
+  const pl = $('planlist'); pl.innerHTML = '';
+  if (r.signals.length) {
+    $('planblock').classList.remove('hidden');
+    for (const s of r.signals) {
+      const steps = TA('verify_' + s);
+      if (!steps.length) continue;
+      const d = document.createElement('div'); d.className = 'plan';
+      const h = document.createElement('h4'); h.textContent = T('sig_' + s); d.appendChild(h);
+      const ol = document.createElement('ol');
+      for (const st of steps) { const li = document.createElement('li'); li.textContent = st; ol.appendChild(li); }
+      d.appendChild(ol); pl.appendChild(d);
+    }
+  } else $('planblock').classList.add('hidden');
+
+  const gl = $('genlist'); gl.innerHTML = '';
+  if (r.score < 30) {
+    $('genblock').classList.remove('hidden');
+    TA('genuine_steps').forEach((st, i) => {
+      const li = document.createElement('li');
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = i + 1;
+      const sp = document.createElement('span'); sp.className = 's'; sp.textContent = st;
+      li.appendChild(n); li.appendChild(sp); gl.appendChild(li);
+    });
+  } else $('genblock').classList.add('hidden');
 
   const cl = $('contactlist'); cl.innerHTML = '';
   const seen = [...(r.contacts.emails || []), ...(r.contacts.hosts || [])];
@@ -448,6 +495,14 @@ $('listen').onclick = () => {
   const bits = [];
   bits.push($('vtext').textContent + '. ' + $('vsub').textContent);
   document.querySelectorAll('#siglist .tx').forEach(el => { if (el.childNodes[0]) bits.push(el.childNodes[0].textContent); });
+  document.querySelectorAll('#planlist .plan').forEach(p => {
+    const h = p.querySelector('h4');
+    const its = [...p.querySelectorAll('li')].map(li => li.textContent).join('. ');
+    if (h && its) bits.push(T('verify_title') + ': ' + h.textContent + '. ' + its);
+  });
+  if (!$('genblock').classList.contains('hidden')) {
+    bits.push(T('genuine_title') + '. ' + [...document.querySelectorAll('#genlist .s')].map(el => el.textContent).join(' '));
+  }
   bits.push(T('next_steps') + '. ' + [$('t-step1').textContent, $('t-step2').textContent, $('t-step3').textContent].join(' '));
   speechSynthesis.cancel();
   speaking = true;
