@@ -57,3 +57,12 @@ test('index.html wires the plan and genuine blocks and the array helper', () => 
     assert.ok(html.includes(needle), 'index.html missing ' + needle);
   }
 });
+
+test('guidance avoids categorical recovery and blanket claims', () => {
+  for (const lang of LANGS) {
+    const joined = (SIGNAL_IDS.map(id => (I18N[lang]['verify_' + id] || []).join(' ')).join(' ') + ' ' + I18N[lang].genuine_steps.join(' ')).toLowerCase();
+    for (const bad of ['cannot be reversed', 'can never be reversed', 'impossible to recover', 'never be recovered', 'वापस नहीं मिलते', 'തിരിച്ചുപിടിക്കാൻ കഴിയില്ല']) {
+      assert.ok(!joined.includes(bad.toLowerCase()), lang + ' contains a categorical claim: ' + bad);
+    }
+  }
+});
