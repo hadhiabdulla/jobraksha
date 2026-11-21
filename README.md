@@ -47,7 +47,7 @@ python3 -m http.server 8080
 node --test
 ```
 
-43 tests, 43 passing.
+44 tests, 44 passing.
 
 A second suite checks that every engine signal has a localized safe verification plan in all three languages, that the genuine-offer checklist stays cautious (it never declares an offer safe), and that the result page wiring is present.
 
@@ -66,3 +66,4 @@ Real, verifiable usage and outcomes are recorded in [`data/impact.json`](data/im
 ## License
 
 MIT. Built for the Code for a Billion - Bharat Agentic-AI Hackathon 2026 (Code for India).
+
