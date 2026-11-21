@@ -20,6 +20,8 @@ Verified figures:
 
 - **The verdict is deterministic.** Every check runs a transparent rules engine (`engine.js`) - 15 weighted, explainable scam signals (advance fees incl. visa/medical-test/confirmation charges, QR-code and UPI/gift-card payment demands, WhatsApp-only recruiters, free-email "HR", unrealistically high salary, no-interview promises, urgency pressure, Aadhaar/OTP harvesting, face-scan/liveness biometric harvesting, money-mule recruitment, task scams, suspicious and lookalike-company links, vague no-requirement roles, brand impersonation). The same input always gives the same verdict, and every signal is shown with its plain-language explanation.
 - **Privacy by design.** Analysis runs entirely in the browser. The message text never leaves the phone. The only server calls are a public usage counter and a yes/no feedback tap; neither stores message content.
+- **Safe verification plans.** Every warning sign comes with a concrete, safe way to check the offer yourself - how to find the company's official site, what genuine employers never ask for, official portals for overseas-job agents (eMigrate), and when to refuse or report. No verdict ever asks the user to trust the message's own links or contacts.
+- **Cautious when nothing fires.** When an offer matches few or no known patterns, the app still lists the checks a genuine offer should survive (confirm the role on the official careers page, match the email domain, never pay or share IDs first) instead of calling anything "safe".
 - **Honest about limits.** "No signals found" is never presented as proof an offer is genuine - the app always says so and tells the user how to verify on the company's official site.
 - **Built for the people scammers target.** No install (PWA), no sign-up, works on low-end phones, Malayalam + Hindi + English, and one-tap reporting guidance to cybercrime.gov.in / helpline 1930.
 - **Works when the scam arrives as a phone call.** Many fake offers come as calls, not texts. You can type a summary of what the caller said, speak it to the app, or add an audio recording. Speech is transcribed on the device (Whisper via transformers.js, ~39 MB one-time model download, cached by the browser); the audio never leaves the phone, and you review and edit the transcript before the check runs. Transcription accuracy depends on the small on-device model - expect mistakes on Malayalam and mixed-language speech, which is why the edit step is required.
@@ -45,7 +47,9 @@ python3 -m http.server 8080
 node --test
 ```
 
-41 tests, 41 passing.
+43 tests, 43 passing.
+
+A second suite checks that every engine signal has a localized safe verification plan in all three languages, that the genuine-offer checklist stays cautious (it never declares an offer safe), and that the result page wiring is present.
 
 The suite covers scam variants that must be caught (advance fee incl. visa/medical-test charges, QR-code payment demands, lookalike company domains, biometric-harvest interviews, mule recruitment, task scams, brand impersonation, data harvesting, urgency + fee, gift cards, unrealistic salary, suspicious links), genuine offers that must not be flagged (TCS careers post incl. its official domain, startup role with real domain, DRDO internship notice, personal referral, a genuine video-interview invite), determinism, junk input, Malayalam text and long inputs.
 
